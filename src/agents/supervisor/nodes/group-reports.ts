@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SupervisorState } from "../supervisor-state.js";
-import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { getModel } from "../../../models/index.js";
 
 const IDENTIFY_SIMILAR_REPORTS_PROMPT = `You are an advanced AI assistant tasked with identifying similar reports based on key details.
 
@@ -91,12 +91,12 @@ function processGroupedReports(
 export async function groupReports(
   state: SupervisorState,
 ): Promise<Partial<SupervisorState>> {
-  const model = new ChatVertexAI({
-    model: "gemini-2.5-pro",
-    temperature: 0,
-  }).withStructuredOutput(responseSchema, {
-    name: "groupSimilarReports",
-  });
+  const model = getModel("vision", { temperature: 0 }).withStructuredOutput(
+    responseSchema,
+    {
+      name: "groupSimilarReports",
+    },
+  );
 
   const formattedPrompt = IDENTIFY_SIMILAR_REPORTS_PROMPT.replace(
     "{reportKeyDetails}",

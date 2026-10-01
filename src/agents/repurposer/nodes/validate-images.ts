@@ -1,5 +1,5 @@
 import { traceable } from "langsmith/traceable";
-import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { getModel } from "../../../models/index.js";
 import { chunkArray, imageUrlToBuffer, isValidUrl } from "../../utils.js";
 import { RepurposerState } from "../types.js";
 import { getImageMessageContents } from "../../../utils/image-message.js";
@@ -169,10 +169,7 @@ export async function validateImages(state: RepurposerState): Promise<{
 }> {
   const { imageOptions, originalContent } = state;
 
-  const model = new ChatVertexAI({
-    model: "gemini-2.5-pro",
-    temperature: 0,
-  });
+  const model = getModel("vision", { temperature: 0 });
 
   const { imageOptions: imagesWithoutProtected, returnEarly } =
     await filterImageUrls(imageOptions ?? []);
@@ -215,7 +212,7 @@ export async function validateImages(state: RepurposerState): Promise<{
 
       allRelevantIndices = [
         ...allRelevantIndices,
-        ...(await extractIndicesFromText(response.content as string)),
+        ...(await extractIndicesFromText(response.text)),
       ];
     } catch (error) {
       console.error(

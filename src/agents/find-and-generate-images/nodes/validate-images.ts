@@ -1,4 +1,4 @@
-import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { getModel } from "../../../models/index.js";
 import { FindAndGenerateImagesAnnotation } from "../find-and-generate-images-graph.js";
 import { chunkArray, imageUrlToBuffer, isValidUrl } from "../../utils.js";
 import { getImageMessageContents } from "../../../utils/image-message.js";
@@ -132,10 +132,7 @@ export async function validateImages(
 }> {
   const { imageOptions, report, post } = state;
 
-  const model = new ChatVertexAI({
-    model: "gemini-2.5-pro",
-    temperature: 0,
-  });
+  const model = getModel("vision", { temperature: 0 });
 
   const { imageOptions: imagesWithoutProtected, returnEarly } =
     await filterImageUrls(imageOptions ?? []);
@@ -176,7 +173,7 @@ export async function validateImages(
         },
       ]);
 
-      const chunkAnalysis = parseResult(response.content as string);
+      const chunkAnalysis = parseResult(response.text);
       // Convert chunk indices to global indices and add to our list of relevant indices
       const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
       allIrrelevantIndices = [...allIrrelevantIndices, ...globalIndices];

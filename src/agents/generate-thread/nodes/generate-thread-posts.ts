@@ -1,4 +1,4 @@
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../../models/index.js";
 import {
   formatAllPostsForPrompt,
   formatBodyPostsForPrompt,
@@ -145,10 +145,7 @@ Once you've completed these steps, provide your tweet inside <tweet> tags. Do no
 export async function generateThreadPosts(
   state: GenerateThreadState,
 ): Promise<Partial<GenerateThreadState>> {
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
-    temperature: 0, // TODO: Eval different temperatures
-  });
+  const model = getModel("thinking", { temperature: 0 }); // TODO: Eval different temperatures
 
   const formattedFirstPostPrompt = FIRST_POST_PROMPT.replace(
     "{THREAD_PLAN}",
@@ -157,7 +154,7 @@ export async function generateThreadPosts(
   const firstPostGeneration = await model.invoke([
     ["user", formattedFirstPostPrompt],
   ]);
-  const firstPost = parseTweetGeneration(firstPostGeneration.content as string);
+  const firstPost = parseTweetGeneration(firstPostGeneration.text);
 
   const bodyPosts: string[] = [];
 
@@ -174,7 +171,7 @@ export async function generateThreadPosts(
 
     const bodyPost = (
       await model.invoke([["user", formattedFollowingPostPrompt]])
-    ).content as string;
+    ).text;
 
     bodyPosts.push(parseTweetGeneration(bodyPost));
   }
@@ -190,7 +187,7 @@ export async function generateThreadPosts(
   const finalPostGeneration = await model.invoke([
     ["user", formattedFinalPostPrompt],
   ]);
-  const finalPost = parseTweetGeneration(finalPostGeneration.content as string);
+  const finalPost = parseTweetGeneration(finalPostGeneration.text);
 
   const allPosts = [firstPost, ...bodyPosts, finalPost];
   return {

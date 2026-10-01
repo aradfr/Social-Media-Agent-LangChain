@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { IngestRepurposedDataState, RepurposedContent } from "../types.js";
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../../models/index.js";
 import { isValidUrl } from "../../utils.js";
 import { traceable } from "langsmith/traceable";
 import { DEFAULT_POST_QUANTITY } from "../constants.js";
@@ -55,10 +55,7 @@ const extractionSchema = z.object({
 async function extractContentsFunc(
   messageText: string,
 ): Promise<Omit<RepurposedContent, "attachmentUrls"> | undefined> {
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
-    temperature: 0,
-  }).bindTools(
+  const model = getModel("toolCalling", { temperature: 0 }).bindTools(
     [
       {
         name: "extract_content",

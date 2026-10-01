@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../models/index.js";
 import { GenerateReportState } from "../state.js";
 import { GENERATE_REPORT_PROMPT_O1 } from "../prompts.js";
 import { TweetsGroupedByContent } from "../../curate-data/types.js";
@@ -78,10 +78,7 @@ export async function generateReport(
     tweetGroup: state.tweetGroup,
   });
 
-  const reportO1Model = new ChatOpenAI({
-    model: "o1",
-    streaming: false,
-  });
+  const reportO1Model = getModel("thinking");
 
   const formattedReportPrompt = GENERATE_REPORT_PROMPT_O1.replace(
     "{keyDetails}",
@@ -107,7 +104,7 @@ export async function generateReport(
   return {
     reports: [
       {
-        report: parseGeneration(report.content as string),
+        report: parseGeneration(report.text),
         keyDetails: state.keyReportDetails,
       },
     ],

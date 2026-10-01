@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../../models/index.js";
 import { CurateDataState } from "../../state.js";
 import { GROUP_BY_CONTENT_CRITERIA } from "./prompts.js";
 import { TweetsGroupedByContent, TweetV2WithURLs } from "../../types.js";
@@ -135,7 +135,7 @@ export async function reGroupTweets(
     return {};
   }
 
-  const model = new ChatOpenAI({ model: "o1", streaming: false });
+  const model = getModel("thinking");
 
   const { include, review } = splitGroups(
     state.tweetsGroupedByContent,
@@ -150,7 +150,7 @@ ${formatGroupsPrompt(review)}`;
     ["user", formattedUserPrompt],
   ]);
 
-  const parsedResult = parseGeneration(result.content as string);
+  const parsedResult = parseGeneration(result.text);
 
   const newGroups: TweetsGroupedByContent[] = parsedResult.map((group) => {
     const tweets = group.tweetIndices.flatMap((index) => {

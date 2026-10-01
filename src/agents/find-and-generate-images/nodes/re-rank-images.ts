@@ -1,4 +1,4 @@
-import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { getModel } from "../../../models/index.js";
 import { FindAndGenerateImagesAnnotation } from "../find-and-generate-images-graph.js";
 import { chunkArray, getMimeTypeFromUrl } from "../../utils.js";
 import { getImageMessageContents } from "../../../utils/image-message.js";
@@ -73,10 +73,7 @@ export async function reRankImages(
     };
   }
 
-  const model = new ChatVertexAI({
-    model: "gemini-2.5-pro",
-    temperature: 0,
-  });
+  const model = getModel("vision", { temperature: 0 });
 
   // Split images into chunks of 5
   const imageChunks = chunkArray(state.imageOptions || [], 5);
@@ -108,7 +105,7 @@ export async function reRankImages(
         },
       ]);
 
-      const chunkAnalysis = parseResult(response.content as string);
+      const chunkAnalysis = parseResult(response.text);
       // Convert chunk indices to global indices and add to our list of re-ranked indices
       const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
       reRankedIndices = [...reRankedIndices, ...globalIndices];

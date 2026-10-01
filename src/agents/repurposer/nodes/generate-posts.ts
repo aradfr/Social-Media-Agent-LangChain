@@ -1,4 +1,4 @@
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../../models/index.js";
 import { getPrompts } from "../../generate-post/prompts/index.js";
 import { RepurposerState } from "../types.js";
 import { z } from "zod";
@@ -95,10 +95,7 @@ export async function generatePosts(
       ),
   });
 
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
-    temperature: 0.5,
-  }).bindTools([
+  const model = getModel("toolCalling", { temperature: 0.5 }).bindTools([
     {
       name: `write_${postOrPosts}`,
       description: `Write ${numPosts} LinkedIn/Twitter ${postOrPosts} based on the marketing report and post campaign plan provided.`,

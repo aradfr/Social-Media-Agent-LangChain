@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../../models/index.js";
 import { CurateDataState } from "../../state.js";
 import { GROUP_BY_CONTENT_CRITERIA } from "./prompts.js";
 
@@ -66,7 +66,7 @@ function parseGeneration(
 export async function groupTweetsByContent(
   state: CurateDataState,
 ): Promise<Partial<CurateDataState>> {
-  const model = new ChatOpenAI({ model: "o1", streaming: false });
+  const model = getModel("thinking");
 
   const formattedUserPrompt = `Here are the tweets you should inspect, and group:
 <all-tweets>
@@ -86,7 +86,7 @@ ${tweetText}
     ["user", formattedUserPrompt],
   ]);
 
-  const parsedGenerations = parseGeneration(result.content as string);
+  const parsedGenerations = parseGeneration(result.text);
 
   if (!parsedGenerations.length) {
     console.warn("No groups found in generation");

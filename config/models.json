@@ -1,0 +1,31 @@
+{
+  "$comment": "Model roles for the social media agent. No secrets here: keys are referenced by env var name (apiKeyEnv / credentialsEnv) and live in .env. Override per role with LLM_<ROLE>_MODEL / LLM_<ROLE>_BASE_URL, e.g. LLM_TOOL_CALLING_MODEL. thinking: default (provider decides) | disabled (required for forced tool calls) | enabled | adaptive.",
+  "roles": {
+    "thinking": {
+      "provider": "anthropic",
+      "model": "kimi-k3",
+      "baseUrl": "https://api.moonshot.ai/anthropic",
+      "apiKeyEnv": "ANTHROPIC_API_KEY",
+      "thinking": "default",
+      "maxTokens": 16000
+    },
+    "toolCalling": {
+      "provider": "anthropic",
+      "model": "kimi-k2.6",
+      "baseUrl": "https://api.moonshot.ai/anthropic",
+      "apiKeyEnv": "ANTHROPIC_API_KEY",
+      "thinking": "disabled",
+      "maxTokens": 4096
+    },
+    "vision": {
+      "provider": "google-vertex",
+      "model": "gemini-2.5-pro",
+      "credentialsEnv": "GOOGLE_VERTEX_AI_WEB_CREDENTIALS"
+    },
+    "imageGen": {
+      "provider": "google-genai",
+      "model": "gemini-3-pro-image-preview",
+      "credentialsEnv": "GOOGLE_VERTEX_AI_WEB_CREDENTIALS"
+    }
+  }
+}

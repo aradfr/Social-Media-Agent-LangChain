@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../../models/index.js";
 import { CurateDataState } from "../../state.js";
 import { GROUP_BY_CONTENT_CRITERIA } from "./prompts.js";
 import { TweetV2WithURLs, TweetsGroupedByContent } from "../../types.js";
@@ -95,7 +95,7 @@ ${formatTweetsInGroup(group.tweets)}
 export async function reflectOnTweetGroups(
   state: CurateDataState,
 ): Promise<Partial<CurateDataState>> {
-  const model = new ChatOpenAI({ model: "o1", streaming: false });
+  const model = getModel("thinking");
 
   const formattedUserPrompt = `Hi! Here are all of the groups I put together:
 ${formatUserPrompt(state.tweetsGroupedByContent)}
@@ -107,7 +107,7 @@ Thanks for your help!`;
     ["user", formattedUserPrompt],
   ]);
 
-  const parsedResult = parseGeneration(result.content as string);
+  const parsedResult = parseGeneration(result.text);
 
   if (parsedResult.similarGroupIndices.length === 0) {
     return {};

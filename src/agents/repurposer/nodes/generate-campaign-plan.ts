@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../models/index.js";
 import { RepurposerState } from "../types.js";
 import { formatReportForPrompt } from "../utils.js";
 
@@ -72,10 +72,7 @@ some details text here
 export async function generateCampaignPlan(
   state: RepurposerState,
 ): Promise<Partial<RepurposerState>> {
-  const model = new ChatOpenAI({
-    model: "o1",
-    streaming: false,
-  });
+  const model = getModel("thinking");
 
   const formattedUserPrompt = GENERATE_CAMPAIGN_PLAN_PROMPT.replace(
     `{NUM_POSTS}`,
@@ -88,6 +85,6 @@ export async function generateCampaignPlan(
   const response = await model.invoke(formattedUserPrompt);
 
   return {
-    campaignPlan: response.content as string,
+    campaignPlan: response.text,
   };
 }

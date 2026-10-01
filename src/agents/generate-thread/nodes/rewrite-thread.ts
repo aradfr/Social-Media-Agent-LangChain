@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { GenerateThreadState } from "../state.js";
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../../models/index.js";
 import {
   getThreadReflections,
   THREAD_REFLECTIONS_PROMPT,
@@ -61,8 +61,7 @@ export async function rewriteThread(
     );
   }
 
-  const rewriteThreadModel = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const rewriteThreadModel = getModel("toolCalling", {
     temperature: 0,
   }).withStructuredOutput(schema, {
     name: "rewriteThreadPosts",

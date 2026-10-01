@@ -10,8 +10,7 @@ import {
   embedImageInTemplate,
   uploadImageBufferToSupabase,
 } from "../helpers.js";
-
-const GEMINI_MODEL = "gemini-3-pro-image-preview";
+import { getRoleSettings } from "../../../models/index.js";
 
 const GENERATE_IMAGE_PROMPT_TEMPLATE = {
   role: "LangChain Brand Design Agent",
@@ -314,14 +313,14 @@ export async function generateImageWithNanoBananaPro(
   imageUrls: string[],
   variationIndex: number = 0,
 ): Promise<{ data: string; mimeType: string }> {
+  // Model name + credentials come from the "imageGen" role (config/models.json).
+  const imageGen = getRoleSettings("imageGen");
   const client = (() => {
-    if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS) {
-      throw new Error("GOOGLE_VERTEX_AI_WEB_CREDENTIALS is not set");
+    if (!imageGen.credentials) {
+      throw new Error(`imageGen role has no Google credentials`);
     }
 
-    const credentials = JSON.parse(
-      process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS,
-    );
+    const credentials = JSON.parse(imageGen.credentials);
 
     return new GoogleGenAI({
       vertexai: true,
@@ -373,7 +372,7 @@ export async function generateImageWithNanoBananaPro(
 
   const generate = (contentsToUse: typeof contents) =>
     client.models.generateContent({
-      model: GEMINI_MODEL,
+      model: imageGen.model,
       contents: contentsToUse,
       config: {
         temperature: 1.2 + Math.random() * 0.6,

@@ -1,6 +1,6 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post-state.js";
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../../../models/index.js";
 import { GENERATE_REPORT_PROMPT } from "./prompts.js";
 
 /**
@@ -36,10 +36,7 @@ export async function generateContentReport(
     );
   }
 
-  const reportModel = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
-    temperature: 0,
-  });
+  const reportModel = getModel("thinking", { temperature: 0 });
 
   const result = await reportModel.invoke([
     {
@@ -53,6 +50,6 @@ export async function generateContentReport(
   ]);
 
   return {
-    report: parseGeneration(result.content as string),
+    report: parseGeneration(result.text),
   };
 }

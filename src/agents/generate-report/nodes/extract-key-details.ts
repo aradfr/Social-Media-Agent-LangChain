@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../models/index.js";
 import { GenerateReportState } from "../state.js";
 import { EXTRACT_KEY_DETAILS_PROMPT } from "../prompts.js";
 import { TweetsGroupedByContent } from "../../curate-data/types.js";
@@ -57,10 +57,7 @@ export async function extractKeyDetails(
     state.tweetGroup,
   );
 
-  const model = new ChatOpenAI({
-    model: "o1",
-    streaming: false,
-  });
+  const model = getModel("thinking");
 
   const imageMessage = state.imageOptions?.length
     ? formatImageMessages(state.imageOptions)
@@ -79,6 +76,6 @@ export async function extractKeyDetails(
   ]);
 
   return {
-    keyReportDetails: keyDetailsRes.content as string,
+    keyReportDetails: keyDetailsRes.text,
   };
 }
