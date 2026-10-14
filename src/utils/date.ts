@@ -1,5 +1,6 @@
-import { nextSaturday, setHours, setMinutes, parse, isValid } from "date-fns";
-import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { addDays, isSaturday, parse, isValid } from "date-fns";
+import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
+import { enGB } from "date-fns/locale";
 import { DateType } from "../agents/types.js";
 
 export const PRIORITY_LEVELS = [
@@ -13,94 +14,119 @@ export const PRIORITY_LEVELS = [
   "r3",
 ];
 
+/** Format of schedule dates shown in the inbox and accepted back. */
+export const SCHEDULE_DATE_FORMAT = "MM/dd/yyyy hh:mm a";
+
+/** Timezone abbreviations accepted in schedule dates -> IANA zone. */
+const TIMEZONE_ABBREVIATIONS: Record<string, string> = {
+  // North America
+  PST: "America/Los_Angeles",
+  PDT: "America/Los_Angeles",
+  MST: "America/Denver",
+  MDT: "America/Denver",
+  CST: "America/Chicago",
+  CDT: "America/Chicago",
+  EST: "America/New_York",
+  EDT: "America/New_York",
+  AKST: "America/Anchorage",
+  AKDT: "America/Anchorage",
+  HST: "Pacific/Honolulu",
+  // Europe. CET/CEST both mean "Central European wall-clock time" (DST
+  // applied automatically), so typing CET in summer does what you expect.
+  UTC: "UTC",
+  GMT: "Etc/GMT",
+  BST: "Europe/London",
+  CET: "Europe/Rome",
+  CEST: "Europe/Rome",
+  EET: "Europe/Helsinki",
+  EEST: "Europe/Helsinki",
+  // Asia/Pacific
+  JST: "Asia/Tokyo",
+  KST: "Asia/Seoul",
+  IST: "Asia/Kolkata",
+  AEST: "Australia/Sydney",
+  AEDT: "Australia/Sydney",
+  AWST: "Australia/Perth",
+  NZST: "Pacific/Auckland",
+  NZDT: "Pacific/Auckland",
+};
+
+/** A trailing zone: 2-5 letter abbreviation or an IANA name like Europe/Rome. */
+const ZONE_SUFFIX = / ([A-Z]{2,5}|[A-Za-z]+\/[A-Za-z_+-]+(?:\/[A-Za-z_]+)?)$/;
+
+function splitZone(
+  dateString: string,
+): { local: string; zone: string } | undefined {
+  const m = dateString.trim().match(ZONE_SUFFIX);
+  if (!m) return undefined;
+  const zone = TIMEZONE_ABBREVIATIONS[m[1]] ?? m[1];
+  return { local: dateString.trim().slice(0, m.index).trim(), zone };
+}
+
+function isKnownZone(zone: string): boolean {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: zone });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Converts a date string in any timezone to a UTC Date object
- * @param dateString - Date string in any timezone (e.g., "2024-01-01 12:00 PST" or "2024-01-01 12:00 America/Los_Angeles")
- * @returns Date object in UTC
+ * Converts 'MM/dd/yyyy hh:mm a <ZONE>' to a UTC Date. ZONE can be an
+ * abbreviation (CET, CEST, PST, …) or an IANA name (Europe/Rome).
  */
 export function timezoneToUtc(dateString: string): Date | undefined {
-  // Try to match both 3-letter codes and IANA timezone names
-  const timezoneMatch = dateString.match(/ ([A-Z]{3,4}|America\/[A-Za-z_]+)$/);
-  if (!timezoneMatch) {
-    console.error("No timezone found in date string");
+  const parts = splitZone(dateString);
+  if (!parts || !isKnownZone(parts.zone)) {
+    console.error("No valid timezone found in date string");
     return undefined;
   }
-
-  const timezone = timezoneMatch[1];
-  // Map common abbreviations to IANA names
-  const timezoneMap: Record<string, string> = {
-    // North America
-    PST: "America/Los_Angeles", // Pacific Standard Time
-    PDT: "America/Los_Angeles", // Pacific Daylight Time
-    MST: "America/Denver", // Mountain Standard Time
-    MDT: "America/Denver", // Mountain Daylight Time
-    CST: "America/Chicago", // Central Standard Time
-    CDT: "America/Chicago", // Central Daylight Time
-    EST: "America/New_York", // Eastern Standard Time
-    EDT: "America/New_York", // Eastern Daylight Time
-    AKST: "America/Anchorage", // Alaska Standard Time
-    AKDT: "America/Anchorage", // Alaska Daylight Time
-    HST: "Pacific/Honolulu", // Hawaii Standard Time
-
-    // Europe
-    GMT: "Etc/GMT", // Greenwich Mean Time
-    BST: "Europe/London", // British Summer Time
-    CET: "Europe/Paris", // Central European Time
-    CEST: "Europe/Paris", // Central European Summer Time
-    EET: "Europe/Helsinki", // Eastern European Time
-    EEST: "Europe/Helsinki", // Eastern European Summer Time
-
-    // Asia/Pacific
-    JST: "Asia/Tokyo", // Japan Standard Time
-    KST: "Asia/Seoul", // Korea Standard Time
-    IST: "Asia/Kolkata", // India Standard Time
-    AEST: "Australia/Sydney", // Australian Eastern Standard Time
-    AEDT: "Australia/Sydney", // Australian Eastern Daylight Time
-    AWST: "Australia/Perth", // Australian Western Standard Time
-    NZST: "Pacific/Auckland", // New Zealand Standard Time
-    NZDT: "Pacific/Auckland", // New Zealand Daylight Time
-  };
-
-  const ianaTimezone = timezoneMap[timezone] || timezone;
-  const withoutTz = dateString.replace(/ [A-Z]{3}$/, "");
-
-  const parsedDate = new Date(withoutTz);
-  if (isNaN(parsedDate.getTime())) {
-    return undefined;
-  }
-
-  const newDate = fromZonedTime(parsedDate, ianaTimezone);
-  if ((newDate as unknown as string) === "Invalid Date") {
-    return undefined;
-  }
-  return newDate;
+  const local = parse(parts.local, SCHEDULE_DATE_FORMAT, new Date(0));
+  if (!isValid(local)) return undefined;
+  // `local` holds the wall-clock fields; interpret them in the given zone.
+  const wallClock = `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, "0")}-${String(local.getDate()).padStart(2, "0")}T${String(local.getHours()).padStart(2, "0")}:${String(local.getMinutes()).padStart(2, "0")}:00`;
+  const utc = fromZonedTime(wallClock, parts.zone);
+  return isNaN(utc.getTime()) ? undefined : utc;
 }
 
 /**
- * Get a date for the next Saturday at the specified hour in Pacific Time (PST/PDT)
- * @param {number} hour - The hour to set for the next Saturday in PST/PDT (default: 12)
- * @param {number} minute - The minute to set for the next Saturday in PST/PDT (default: 0)
- * @returns {Date} The date for the next Saturday at the specified hour in PST/PDT
+ * Format a date for the inbox in the given zone, e.g. "10/18/2026 06:20 PM CEST".
+ * Uses the zone's abbreviation when one exists, otherwise its IANA name, so
+ * the string can always be submitted back unchanged.
  */
-export function getNextSaturdayDate(hour = 12, minute = 0): Date {
-  const saturday = nextSaturday(new Date());
-  const saturdayWithTime = setMinutes(setHours(saturday, hour), minute);
-  return toZonedTime(saturdayWithTime, "America/Los_Angeles");
+export function formatScheduleDate(date: Date, timeZone: string): string {
+  const local = formatInTimeZone(date, timeZone, SCHEDULE_DATE_FORMAT);
+  const abbr = formatInTimeZone(date, timeZone, "zzz", { locale: enGB });
+  const zone =
+    /^[A-Z]{2,5}$/.test(abbr) && TIMEZONE_ABBREVIATIONS[abbr] ? abbr : timeZone;
+  return `${local} ${zone}`;
 }
 
 /**
- * Validates a date string in the format 'MM/dd/yyyy hh:mm a z'
- * @param dateString - The date string to validate
- * @returns {boolean} - Whether the date string is valid
+ * Next Saturday (after today, in `timeZone`) at hour:minute wall-clock time
+ * in `timeZone`, as an absolute Date.
  */
+export function getNextSaturdayDate(
+  hour = 12,
+  minute = 0,
+  timeZone = "America/Los_Angeles",
+): Date {
+  let day = toZonedTime(new Date(), timeZone);
+  do {
+    day = addDays(day, 1);
+  } while (!isSaturday(day));
+  const wallClock = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
+  return fromZonedTime(wallClock, timeZone);
+}
+
+/** Validates 'MM/dd/yyyy hh:mm a <ZONE>' (zone optional for this check). */
 export function isValidDateString(dateString: string): boolean {
   try {
-    // Remove timezone abbreviation if present
-    const dateWithoutTz = dateString.replace(/ [A-Z]{3}$/, "");
-
-    // Parse the date without timezone
-    const parsedDate = parse(dateWithoutTz, "MM/dd/yyyy hh:mm a", new Date());
-    return isValid(parsedDate);
+    const parts = splitZone(dateString);
+    if (parts && !isKnownZone(parts.zone)) return false;
+    const local = parts ? parts.local : dateString.trim();
+    return isValid(parse(local, SCHEDULE_DATE_FORMAT, new Date()));
   } catch (e) {
     console.error("Failed to parse date string:", e);
     return false;
@@ -108,20 +134,16 @@ export function isValidDateString(dateString: string): boolean {
 }
 
 /**
- * Parses a date string into a DateType, handling both priority values and UTC date conversion
- * @param dateString - Input string that can be either a priority value (p1, p2, p3) or a valid date string
- * @returns Priority value (p1/p2/p3), UTC converted Date if valid date string, or undefined if invalid
+ * Parses a priority value (p1…r3) or a 'MM/dd/yyyy hh:mm a <ZONE>' date.
+ * @returns Priority value, UTC Date, or undefined if invalid
  */
 export function parseDateResponse(dateString: string): DateType | undefined {
   const cleanedDate = dateString.toLowerCase().trim();
   if (PRIORITY_LEVELS.find((p) => cleanedDate === p)) {
     return cleanedDate as DateType;
   }
-
-  const isDateValid = isValidDateString(dateString);
-  if (!isDateValid) {
+  if (!isValidDateString(dateString)) {
     return undefined;
   }
-
   return timezoneToUtc(dateString);
 }

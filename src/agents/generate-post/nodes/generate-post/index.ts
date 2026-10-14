@@ -9,6 +9,7 @@ import {
   REFLECTIONS_PROMPT,
 } from "../../../../utils/reflections.js";
 import { getNextSaturdayDate } from "../../../../utils/date.js";
+import { scheduleTimezone } from "../../../../profiles/index.js";
 
 export async function generatePost(
   state: typeof GeneratePostAnnotation.State,
@@ -52,7 +53,11 @@ export async function generatePost(
   ]
     .split(" ")[0]
     .split(":");
-  const postDate = getNextSaturdayDate(Number(postHour), Number(postMinute));
+  const postDate = getNextSaturdayDate(
+    Number(postHour),
+    Number(postMinute),
+    scheduleTimezone(),
+  );
 
   return {
     post: parseGeneration(postResponse.text),

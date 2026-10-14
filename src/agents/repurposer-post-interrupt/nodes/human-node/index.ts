@@ -4,13 +4,17 @@ import {
 } from "../../types.js";
 import { HumanInterrupt, HumanResponse } from "@langchain/langgraph/prebuilt";
 import { END, interrupt } from "@langchain/langgraph";
-import { parseDateResponse, PRIORITY_LEVELS } from "../../../../utils/date.js";
+import {
+  formatScheduleDate,
+  parseDateResponse,
+  PRIORITY_LEVELS,
+} from "../../../../utils/date.js";
+import { scheduleTimezone } from "../../../../profiles/index.js";
 import {
   constructDescription,
   getUnknownResponseDescription,
 } from "./utils.js";
 import { routeResponse } from "./router.js";
-import { formatInTimeZone } from "date-fns-tz";
 import { processImageInput } from "../../../utils.js";
 import { DateType, Image } from "../../../types.js";
 
@@ -28,10 +32,9 @@ export async function humanNode(
   ) {
     defaultDateString = state.scheduleDate as string;
   } else if (state.scheduleDate && typeof state.scheduleDate === "object") {
-    defaultDateString = formatInTimeZone(
-      state.scheduleDate,
-      "America/Los_Angeles",
-      "MM/dd/yyyy hh:mm a z",
+    defaultDateString = formatScheduleDate(
+      state.scheduleDate as Date,
+      scheduleTimezone(),
     );
   }
 

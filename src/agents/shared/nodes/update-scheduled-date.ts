@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { getModel } from "../../../models/index.js";
-import { toZonedTime } from "date-fns-tz";
 import { DateType } from "../../types.js";
-import { timezoneToUtc } from "../../../utils/date.js";
+import { formatScheduleDate, timezoneToUtc } from "../../../utils/date.js";
+import { scheduleTimezone } from "../../../profiles/index.js";
 
 const SCHEDULE_POST_DATE_PROMPT = `You're an intelligent AI assistant tasked with extracting the date to schedule a social media post from the user's message.
 
@@ -16,13 +16,13 @@ The user may respond with either:
 Your task is to extract the date/priority level from the user's message and return it in a structured format the system can handle.
 
 If the user's message is asking for a date, convert it to the following format:
-'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST'
-Always use PST for the timezone. If they don't specify a time, you can make one up, as long as it's between 8:00 AM and 3:00 PM PST (5 minute intervals).
+'MM/dd/yyyy hh:mm a z'. Example: '{exampleDate}'
+Always use the user's timezone, {timezone}, and end the date with its abbreviation exactly as in the example. If they don't specify a time, you can make one up, as long as it's between 8:00 AM and 3:00 PM (5 minute intervals).
 
 If the user's message is asking for a priority level, return it in the following format:
 'p1', 'p2', or 'p3'
 
-The current date and time (in PST) are: {currentDateAndTime}
+The current date and time in the user's timezone ({timezone}) are: {currentDateAndTime}
 
 You should use this to infer the date if the user's message does not contain an exact date,
 Example: 'this saturday'
@@ -48,13 +48,16 @@ export async function updateScheduledDate(
   }).withStructuredOutput(scheduleDateSchema, {
     name: "scheduleDate",
   });
-  const pstDate = toZonedTime(new Date(), "America/Los_Angeles");
-  const pstDateString = pstDate.toISOString();
-
+  const tz = scheduleTimezone();
   const prompt = SCHEDULE_POST_DATE_PROMPT.replace(
     "{currentDateAndTime}",
-    pstDateString,
-  );
+    formatScheduleDate(new Date(), tz),
+  )
+    .replace(
+      "{exampleDate}",
+      formatScheduleDate(new Date(Date.UTC(2026, 11, 24, 9, 0)), tz),
+    )
+    .replaceAll("{timezone}", tz);
 
   const result = await model.invoke([
     {

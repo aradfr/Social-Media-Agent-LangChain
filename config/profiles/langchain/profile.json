@@ -18,6 +18,9 @@
     "headerPrefix": "LangChain Community Spotlight:",
     "stripPhrases": ["Made by the LangChain Community"]
   },
+  "schedule": {
+    "timezone": "America/Los_Angeles"
+  },
   "exclusions": {
     "domains": ["langchain.com", "langchain.dev", "langchain-ai.github.io"],
     "githubOrgs": ["langchain-ai"],

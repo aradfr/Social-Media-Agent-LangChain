@@ -192,3 +192,14 @@ describe("getActiveProfile", () => {
     expect(DEFAULT_PROFILES_DIR).toMatch(/config[\\/]profiles$/);
   });
 });
+
+describe("schedule timezone", () => {
+  it("default profile schedules in Europe/Rome (CET/CEST)", () => {
+    expect(loadProfile("default").schedule.timezone).toBe("Europe/Rome");
+  });
+  it("langchain profile keeps Pacific time", () => {
+    expect(loadProfile("langchain").schedule.timezone).toBe(
+      "America/Los_Angeles",
+    );
+  });
+});

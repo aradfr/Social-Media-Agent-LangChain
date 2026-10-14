@@ -41,6 +41,10 @@ export interface Profile {
     /** Phrases removed from posts before publishing. */
     stripPhrases: string[];
   };
+  schedule: {
+    /** IANA zone for default post times, inbox display and P1–P3 slots, e.g. Europe/Rome. */
+    timezone: string;
+  };
   exclusions: {
     domains: string[];
     githubOrgs: string[];
@@ -150,6 +154,12 @@ export function loadProfile(id: string, opts: { dir?: string } = {}): Profile {
       `profile "${id}": unknown curation.preset "${preset}" (expected: ${CURATION_PRESETS.join(", ")})`,
     );
   }
+  const timezone = String(raw.schedule?.timezone ?? "Europe/Rome");
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: timezone });
+  } catch {
+    throw new Error(`profile "${id}": unknown schedule.timezone "${timezone}"`);
+  }
   const styleVariations = strings(img.styleVariations);
   if (!styleVariations.length) {
     throw new Error(
@@ -184,6 +194,7 @@ export function loadProfile(id: string, opts: { dir?: string } = {}): Profile {
       headerPrefix: raw.signature?.headerPrefix || undefined,
       stripPhrases: strings(raw.signature?.stripPhrases),
     },
+    schedule: { timezone },
     exclusions: {
       domains: strings(raw.exclusions?.domains),
       githubOrgs: strings(raw.exclusions?.githubOrgs),
@@ -228,4 +239,9 @@ export function brandProducts(p: Profile = getActiveProfile()): string {
 /** "Acme" or "your company". */
 export function brandName(p: Profile = getActiveProfile()): string {
   return p.brand.name ?? "your company";
+}
+
+/** IANA timezone used for scheduling in the active profile. */
+export function scheduleTimezone(p: Profile = getActiveProfile()): string {
+  return p.schedule.timezone;
 }

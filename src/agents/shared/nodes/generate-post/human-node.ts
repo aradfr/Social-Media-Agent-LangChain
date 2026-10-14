@@ -1,11 +1,12 @@
 import { END, LangGraphRunnableConfig, interrupt } from "@langchain/langgraph";
 import { BaseGeneratePostState, BaseGeneratePostUpdate } from "./types.js";
-import { formatInTimeZone } from "date-fns-tz";
 import { isTextOnly, processImageInput } from "../../../utils.js";
 import {
+  formatScheduleDate,
   getNextSaturdayDate,
   parseDateResponse,
 } from "../../../../utils/date.js";
+import { scheduleTimezone } from "../../../../profiles/index.js";
 import { routeResponse } from "../../../shared/nodes/route-response.js";
 import { saveUsedUrls } from "../../../shared/stores/post-subject-urls.js";
 import { HumanInterrupt, HumanResponse } from "@langchain/langgraph/prebuilt";
@@ -80,10 +81,11 @@ There are a few different actions which can be taken:\n
 
 ### Schedule Date
 
-The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST', _OR_ you can use a priority level:
-- **P1**: Saturday/Sunday between 8:00 AM and 10:00 AM PST.
+The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a ZONE'. Example: '${formatScheduleDate(new Date(Date.UTC(2026, 11, 24, 9, 0)), scheduleTimezone())}' (CET, CEST, PST, or an IANA zone such as Europe/Rome), _OR_ you can use a priority level:
+- **P1**: Saturday/Sunday between 8:00 AM and 10:00 AM PST (5–7 PM CET).
 - **P2**: Friday/Monday between 8:00 AM and 10:00 AM PST _OR_ Saturday/Sunday between 11:30 AM and 1:00 PM PST.
 - **P3**: Saturday/Sunday between 1:00 PM and 5:00 PM PST.
+(Priority slots are still US-Pacific based; exact dates use the timezone you type.)
 
 ### Image
 
@@ -118,7 +120,8 @@ export async function humanNode<
   const isTextOnlyMode = isTextOnly(config);
 
   const unknownResponseDescription = getUnknownResponseDescription(state);
-  const defaultDate = state.scheduleDate || getNextSaturdayDate();
+  const tz = scheduleTimezone();
+  const defaultDate = state.scheduleDate || getNextSaturdayDate(12, 0, tz);
   let defaultDateString = "";
   if (
     typeof state.scheduleDate === "string" &&
@@ -126,11 +129,7 @@ export async function humanNode<
   ) {
     defaultDateString = state.scheduleDate as string;
   } else {
-    defaultDateString = formatInTimeZone(
-      defaultDate,
-      "America/Los_Angeles",
-      "MM/dd/yyyy hh:mm a z",
-    );
+    defaultDateString = formatScheduleDate(defaultDate as Date, tz);
   }
 
   const postArgs = state.complexPost
@@ -260,7 +259,7 @@ export async function humanNode<
     if (!postDate) {
       throw new Error(
         "Invalid date provided.\n\n" +
-          "Expected format: 'MM/dd/yyyy hh:mm a z' or 'P1'/'P2'/'P3' or leave empty to post now.\n\n" +
+          "Expected format: 'MM/dd/yyyy hh:mm a ZONE' (e.g. CET, CEST, Europe/Rome) or 'P1'/'P2'/'P3' or leave empty to post now.\n\n" +
           `Received: '${postDateString}'`,
       );
     }

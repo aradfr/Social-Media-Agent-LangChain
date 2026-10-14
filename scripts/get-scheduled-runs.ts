@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { Client, Run } from "@langchain/langgraph-sdk";
 import { SlackClient } from "../src/clients/slack/client.js";
-import { format } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { formatScheduleDate } from "../src/utils/date.js";
+import { scheduleTimezone } from "../src/profiles/index.js";
 
 type PendingRun = {
   thread_id: string;
@@ -57,7 +57,7 @@ async function getScheduledRuns() {
   const pendingRunsString = pendingRuns.map(
     (post, index) => `*Post ${index + 1}*:
 
-Scheduled for *${format(toZonedTime(new Date(post.scheduleDate), "America/Los_Angeles"), "MM/dd hh:mm a")} PST*
+Scheduled for *${formatScheduleDate(new Date(post.scheduleDate), scheduleTimezone())}*
 
 Post:
 \`\`\`

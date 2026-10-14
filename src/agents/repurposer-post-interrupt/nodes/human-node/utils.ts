@@ -139,7 +139,7 @@ There are a few different actions which can be taken:\n
 
 ### Schedule Date
 
-The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST', _OR_ you can use a priority level:
+The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a ZONE'. Example: '12/24/2026 10:00 AM CET' (CET, CEST, PST, or an IANA zone such as Europe/Rome), _OR_ you can use a priority level:
 - **R1**: TODO: WHAT SCHEDULE DATE FOR R1
 - **R2**: TODO: WHAT SCHEDULE DATE FOR R2
 - **R3**: TODO: WHAT SCHEDULE DATE FOR R3
