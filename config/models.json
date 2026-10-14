@@ -24,7 +24,7 @@
     },
     "imageGen": {
       "provider": "google-genai",
-      "model": "gemini-3-pro-image-preview",
+      "model": "gemini-3-pro-image",
       "credentialsEnv": "GOOGLE_VERTEX_AI_WEB_CREDENTIALS"
     }
   }
