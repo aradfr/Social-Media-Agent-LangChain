@@ -589,15 +589,6 @@ export function capitalize(string: string): string {
 }
 
 /**
- * Returns true if LangChain prompts should be used
- *
- * @returns {boolean} True if LangChain prompts should be used
- */
-export function useLangChainPrompts(): boolean {
-  return process.env.USE_LANGCHAIN_PROMPTS === "true";
-}
-
-/**
  * Returns true if Arcade authentication should be used
  *
  * @returns {boolean} True if Arcade authentication should be used

@@ -1,9 +1,12 @@
+import { getActiveProfile } from "../../../profiles/index.js";
 import { getModel } from "../../../models/index.js";
 import { FindAndGenerateImagesAnnotation } from "../find-and-generate-images-graph.js";
 import { chunkArray, imageUrlToBuffer, isValidUrl } from "../../utils.js";
 import { getImageMessageContents } from "../../../utils/image-message.js";
 
-const VALIDATE_IMAGES_PROMPT = `You are an advanced AI assistant tasked with validating image options for a social media post.
+const ALLOWED_LOGOS = getActiveProfile().images.allowedLogos;
+
+export const VALIDATE_IMAGES_PROMPT = `You are an advanced AI assistant tasked with validating image options for a social media post.
 Your goal is to identify which images from a given set are relevant to the post, based on the content of the post and an associated marketing report.
 
 First, carefully read and analyze the following social media post:
@@ -23,7 +26,7 @@ To determine which images are relevant, consider the following criteria:
 2. Does the image represent any products, services, or concepts mentioned in either the post or the report?
 
 You should NEVER include images which are:
-- Logos, icons, or profile pictures (unless it is a LangChain/LangGraph/LangSmith logo).
+- Logos, icons, or profile pictures${ALLOWED_LOGOS.length ? ` (unless it is a ${ALLOWED_LOGOS.join("/")} logo)` : ""}.
 - Personal, or non-essential images from a business perspective.
 - Small, low-resolution images. These are likely accidentally included in the post and should be excluded.
 

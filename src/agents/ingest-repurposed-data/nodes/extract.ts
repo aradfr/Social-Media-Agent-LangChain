@@ -1,3 +1,4 @@
+import { brandName } from "../../../profiles/index.js";
 import { z } from "zod";
 import { IngestRepurposedDataState, RepurposedContent } from "../types.js";
 import { getModel } from "../../../models/index.js";
@@ -7,10 +8,10 @@ import { DEFAULT_POST_QUANTITY } from "../constants.js";
 import { MessageContentText } from "@langchain/core/messages";
 import { getPublicFileUrls } from "../../../clients/slack/utils.js";
 
-const EXTRACT_CONTENT_PROMPT = `You're a helpful AI assistant, tasked with extracting content from a Slack message.
+export const EXTRACT_CONTENT_PROMPT = `You're a helpful AI assistant, tasked with extracting content from a Slack message.
 
 <context>
-The Slack message will contain link(s) to content which our company (LangChain) wants to post about.
+The Slack message will contain link(s) to content which our company (${brandName()}) wants to post about.
 To generate a post, we need at a minimum, one link to the original content.
 Additionally, users can send followup links to be used as "additional contexts".
 Lastly, they can provide a "quantity" number, indicating how many posts to generate. They do not need to supply this, as we'll set the default to 2.

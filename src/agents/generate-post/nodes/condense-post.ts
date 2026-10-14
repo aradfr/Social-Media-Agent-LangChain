@@ -1,16 +1,26 @@
 import { getModel } from "../../../models/index.js";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { parseGeneration } from "./generate-post/utils.js";
-import { filterLinksForPostContent, removeUrls } from "../../utils.js";
+import { filterLinksForPostContent } from "../../utils.js";
+import {
+  getPlatformLimits,
+  xWeightedLength,
+} from "../../../platforms/index.js";
 import {
   REFLECTIONS_PROMPT,
   getReflectionsPrompt,
 } from "../../../utils/reflections.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { getPrompts } from "../prompts/index.js";
+import { getActiveProfile } from "../../../profiles/index.js";
 
-const CONDENSE_POST_PROMPT = `You're a highly skilled marketer at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
-You wrote a post for the LangChain LinkedIn and Twitter pages, however it's a bit too long for Twitter, and thus needs to be condensed.
+const brand = getActiveProfile().brand.name;
+const PAGES = brand
+  ? `${brand}'s LinkedIn and Twitter pages`
+  : "the LinkedIn and Twitter pages";
+
+export const CONDENSE_POST_PROMPT = `You're a highly skilled marketer${brand ? ` at ${brand}` : ""}, working on crafting thoughtful and engaging content for ${PAGES}.
+You wrote a post for ${PAGES}, however it's a bit too long for Twitter, and thus needs to be condensed.
 
 You wrote this marketing report on the content which you used to write the original post:
 <report>
@@ -18,12 +28,12 @@ You wrote this marketing report on the content which you used to write the origi
 </report>
 
 Here are the relevant links used to create the report. At least ONE should be included in the condensed post.
-The links do NOT contribute to the post's length. They are temporarily removed from the post before the length is calculated, and re-added afterwards.
+Each link counts as {urlLength} characters towards the post's length, no matter how long the URL is.
 <links>
 {links}
 </links>
 
-You should not be worried by the length of the link, as that will be shortened before posting. Only focus on condensing the length of the post content itself.
+Do not shorten or alter the link itself. Only condense the text around it.
 
 Here are the rules and structure you used to write the original post, which you should use when condensing the post now:
 <rules-and-structure>
@@ -38,7 +48,7 @@ ${getPrompts().postContentRules}
 
 </rules-and-structure>
 
-Given the marketing report, link, rules and structure, please condense the post down to roughly 280 characters (not including the link). The original post was {originalPostLength} characters long.
+Given the marketing report, link, rules and structure, please condense the post so its total length is at most {maxLength} characters, counting each link as {urlLength}. The original post was {originalPostLength} characters long by that count.
 Ensure you keep the same structure, and do not omit any crucial content outright.
 
 Follow this flow to rewrite the post in a condensed format:
@@ -70,7 +80,10 @@ export async function condensePost(
     throw new Error("No relevant links found");
   }
 
-  const originalPostLength = removeUrls(state.post || "").length.toString();
+  const limits = getPlatformLimits("x");
+  const originalPostLength = xWeightedLength(state.post || "", {
+    urlLength: limits.urlLength,
+  }).toString();
 
   const reflections = await getReflectionsPrompt(config);
   const reflectionsPrompt = REFLECTIONS_PROMPT.replace(
@@ -84,6 +97,8 @@ export async function condensePost(
   )
     .replace("{links}", filterLinksForPostContent(state.relevantLinks))
     .replace("{originalPostLength}", originalPostLength)
+    .replaceAll("{maxLength}", String(limits.maxLength))
+    .replaceAll("{urlLength}", String(limits.urlLength))
     .replace("{reflectionsPrompt}", reflectionsPrompt);
 
   const condensePostModel = getModel("thinking", { temperature: 0.5 });

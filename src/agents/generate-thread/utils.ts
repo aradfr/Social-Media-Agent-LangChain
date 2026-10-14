@@ -1,4 +1,5 @@
-import { EXAMPLES } from "../generate-post/prompts/examples.js";
+import { getActiveProfile } from "../../profiles/index.js";
+import { formatExamples } from "../generate-post/prompts/index.js";
 
 export function formatReportsForPrompt(reports: string[]): string {
   return reports
@@ -26,9 +27,7 @@ export function formatAllPostsForPrompt(posts: string[]): string {
 }
 
 export function formatTweetExamplesForPrompt(): string {
-  return EXAMPLES.map(
-    (ex, index) => `<example index="${index}">\n${ex}\n</example>`,
-  ).join("\n");
+  return formatExamples(getActiveProfile().prompts.examples);
 }
 
 export function parseTweetGeneration(tweet: string): string {

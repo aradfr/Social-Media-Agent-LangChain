@@ -1,51 +1,31 @@
-import { useLangChainPrompts } from "./utils.js";
+import { getActiveProfile } from "../profiles/index.js";
 
-export const LANGCHAIN_DOMAINS = [
-  "langchain.com",
-  "langchain.dev",
-  "langchain-ai.github.io",
-];
+/**
+ * Content exclusion rules. Lists come from the active profile's `exclusions`
+ * section (empty in the default profile = nothing excluded).
+ */
 
 export function shouldExcludeGeneralContent(url: string): boolean {
-  // Do not exclude any content if USE_LANGCHAIN_PROMPTS is not set to true.
-  if (!useLangChainPrompts()) {
-    return false;
-  }
-
-  // We don't want to generate posts on LangChain website content.
-  if (LANGCHAIN_DOMAINS.some((lcUrl) => url.includes(lcUrl))) {
-    return true;
-  }
-
-  return false;
+  const { domains } = getActiveProfile().exclusions;
+  return domains.some((d) => url.includes(d));
 }
 
 export function shouldExcludeGitHubContent(link: string): boolean {
-  // Do not exclude any content if USE_LANGCHAIN_PROMPTS is not set to true.
-  if (!useLangChainPrompts()) {
-    return false;
-  }
-
-  const langChainGitHubOrg = "github.com/langchain-ai/";
-  // Do not generate posts on LangChain repos.
-  return link.includes(langChainGitHubOrg);
+  const { githubOrgs } = getActiveProfile().exclusions;
+  return githubOrgs.some((org) => link.includes(`github.com/${org}/`));
 }
 
 export function shouldExcludeYouTubeContent(channelName: string): boolean {
-  // Do not exclude any content if USE_LANGCHAIN_PROMPTS is not set to true.
-  if (!useLangChainPrompts()) {
-    return false;
-  }
-
-  return channelName.toLowerCase() === "langchain";
+  const { youtubeChannels } = getActiveProfile().exclusions;
+  return youtubeChannels.some(
+    (c) => c.toLowerCase() === channelName.toLowerCase(),
+  );
 }
 
 export function shouldExcludeTweetContent(externalUrls: string[]): boolean {
-  // Do not exclude any content if USE_LANGCHAIN_PROMPTS is not set to true.
-  if (!useLangChainPrompts()) {
+  // Some profiles only want tweets that link to external content.
+  if (!getActiveProfile().exclusions.tweetsRequireExternalUrls) {
     return false;
   }
-
-  // If there are no external URLs, then we should exclude the tweet. Return true.
   return externalUrls.length === 0;
 }

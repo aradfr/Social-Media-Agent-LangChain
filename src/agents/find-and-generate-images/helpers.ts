@@ -6,7 +6,8 @@ import { COMMUNITY_TEMPLATE_SVG } from "./community-template.js";
 const SIGNED_URL_EXPIRY = 60 * 60 * 24 * 180; // 180 days
 
 /**
- * Embed a generated image into the LangChain community template SVG
+ * Embed a generated image into the "langchain-community" frame template SVG
+ * (profile images.frameTemplate). Only used when a profile selects it.
  * and render it to a PNG buffer using Sharp.
  * @param imageBase64 The base64-encoded image data to embed
  * @param mimeType The MIME type of the image (e.g., "image/png", "image/jpeg")

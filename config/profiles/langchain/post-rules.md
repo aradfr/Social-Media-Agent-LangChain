@@ -1,0 +1,8 @@
+- Focus your post on what the content covers, aims to achieve, and how it uses LangChain's product(s) to do that. This should be concise and high level.
+- Do not make the post over technical as some of our audience may not be advanced developers, but ensure it is technical enough to engage developers.
+- Keep posts short, concise and engaging
+- Limit the use of emojis to the post header, and optionally in the call to action.
+- NEVER use hashtags in the post.
+- ALWAYS use present tense to make announcements feel immediate (e.g., "Microsoft just launched..." instead of "Microsoft launches...").
+- ALWAYS include at least one link to the content being promoted in the call to action section of the post.
+- If the call to action links to a domain owned by LangChain ("langchain.com", "langchain.dev", "langchain-ai.github.io"), use first person pronouns (e.g., "We released...", "Our latest...") since you're posting from the LangChain account about LangChain's own content.

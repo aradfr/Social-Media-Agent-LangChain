@@ -15,7 +15,6 @@ import { generatePost } from "./nodes/generate-post/index.js";
 import { condensePost } from "./nodes/condense-post.js";
 import {
   isTextOnly,
-  removeUrls,
   shouldPostToLinkedInOrg,
   skipUsedUrlsCheck,
 } from "../utils.js";
@@ -30,6 +29,7 @@ import { rewritePost } from "../shared/nodes/generate-post/rewrite-post.js";
 import { Client } from "@langchain/langgraph-sdk";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "./constants.js";
 import { rewritePostWithSplitUrl } from "./nodes/rewrite-with-split-url.js";
+import { shouldCondense } from "../../platforms/index.js";
 
 async function findAndGenerateImagesWithFallback(
   state: GeneratePostState,
@@ -93,8 +93,8 @@ async function condenseOrHumanConditionalEdge(
 ): Promise<
   "condensePost" | "humanNode" | "findAndGenerateImagesSubGraph" | typeof END
 > {
-  const cleanedPost = removeUrls(state.post || "");
-  if (cleanedPost.length > 280 && state.condenseCount <= 3) {
+  // Length as X counts it (links = 23 chars); limits from config/platforms.json.
+  if (shouldCondense(state.post || "", state.condenseCount)) {
     return "condensePost";
   }
 

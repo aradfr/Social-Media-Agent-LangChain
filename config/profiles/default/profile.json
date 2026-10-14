@@ -1,0 +1,36 @@
+{
+  "$comment": "Brand-free starter profile. Copy this folder to config/profiles/<your-niche>/, edit the .md files, and select it with AGENT_PROFILE=<your-niche>. Text fields accept inline text or a path to a .md/.json file next to profile.json.",
+  "id": "default",
+  "name": "Generic AI / developer tools",
+  "brand": {},
+  "audience": "Developers and technical professionals interested in AI",
+  "prompts": {
+    "businessContext": "business-context.md",
+    "contentValidation": "content-validation.md",
+    "postStructure": "post-structure.md",
+    "postRules": "post-rules.md",
+    "examples": "examples.md"
+  },
+  "signature": {
+    "stripPhrases": []
+  },
+  "exclusions": {
+    "domains": [],
+    "githubOrgs": [],
+    "youtubeChannels": [],
+    "tweetsRequireExternalUrls": false
+  },
+  "images": {
+    "promptTemplate": "image-prompt.json",
+    "styleVariations": [
+      "Light blue (#7FC8FF) background. Dark navy (#030710) text and elements. Use #99D3FF for secondary fills and #F2FAFF for card backgrounds.",
+      "Light tint 1 (#99D3FF) background. Dark navy (#030710) text and elements. Use #7FC8FF for accent elements and #B2DEFF for secondary fills.",
+      "Light tint 2 (#B2DEFF) background. Dark navy (#030710) text and elements. Use #7FC8FF for accent elements and #CCE9FF for card backgrounds."
+    ],
+    "frameTemplate": "none",
+    "allowedLogos": []
+  },
+  "curation": {
+    "preset": "generic"
+  }
+}

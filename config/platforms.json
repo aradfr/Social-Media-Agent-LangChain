@@ -1,0 +1,6 @@
+{
+  "$comment": "Per-platform limits. maxLength = weighted length as the platform counts it; urlLength = characters each link counts as (X: 23 via t.co); maxCondenseRounds = how often the agent may shorten a post before handing it to you.",
+  "platforms": {
+    "x": { "maxLength": 280, "urlLength": 23, "maxCondenseRounds": 3 }
+  }
+}

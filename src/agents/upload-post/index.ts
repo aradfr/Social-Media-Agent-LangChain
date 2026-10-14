@@ -1,3 +1,4 @@
+import { getActiveProfile, type Profile } from "../../profiles/index.js";
 import {
   Annotation,
   END,
@@ -42,15 +43,29 @@ async function getMediaFromImage(image?: {
   };
 }
 
-export function ensureSignature(text: string): string {
-  const prefix = "LangChain Community Spotlight:";
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  let result = text.replace(/\n*Made by the LangChain Community\n*/gi, "\n\n");
+/**
+ * Apply the active profile's signature: strip unwanted phrases, normalise
+ * blank lines, and prepend the header prefix if the profile defines one.
+ */
+export function ensureSignature(
+  text: string,
+  signature: Profile["signature"] = getActiveProfile().signature,
+): string {
+  let result = text;
+  for (const phrase of signature.stripPhrases) {
+    result = result.replace(
+      new RegExp(`\\n*${escapeRegExp(phrase)}\\n*`, "gi"),
+      "\n\n",
+    );
+  }
   result = result.replace(/^\n+/, "");
   result = result.replace(/\n+$/, "");
   result = result.replace(/\n{3,}/g, "\n\n");
 
-  if (!result.toLowerCase().includes(prefix.toLowerCase())) {
+  const prefix = signature.headerPrefix;
+  if (prefix && !result.toLowerCase().includes(prefix.toLowerCase())) {
     result = `${prefix} ${result}`;
   }
 

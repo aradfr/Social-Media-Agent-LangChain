@@ -16,12 +16,13 @@ import { reflectOnTweetGroups } from "./nodes/tweets/reflect-tweet-groups.js";
 import { reGroupTweets } from "./nodes/tweets/re-group-tweets.js";
 import { generatePostsSubgraph } from "./nodes/generate-posts-subgraph.js";
 import { extractAINewsletterContent } from "./nodes/extract-ai-newsletter-content.js";
-import { useLangChainPrompts } from "../utils.js";
+import { getActiveProfile } from "../../profiles/index.js";
 
 function generatePostOrContinue(
   _state: CurateDataState,
 ): "generatePostsSubgraph" | "verifyBulkTweets" {
-  if (useLangChainPrompts()) {
+  // Curation sources/flow per profile (curation.preset in profile.json).
+  if (getActiveProfile().curation.preset === "langchain") {
     return "generatePostsSubgraph";
   }
   return "verifyBulkTweets";

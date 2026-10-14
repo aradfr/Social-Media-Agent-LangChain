@@ -27,7 +27,7 @@ or
 "Video link in reply 🧵"
 2. The second is the reply post. This should contain a very concise callout (e.g. 'Check out the repo here:'), and the URL.
 Example:
-"Checkout the repo here: https://github.com/bracesproul/langchain-ai"
+"Checkout the repo here: https://github.com/example-org/example-repo"
 
 Given the following post:
 {POST}

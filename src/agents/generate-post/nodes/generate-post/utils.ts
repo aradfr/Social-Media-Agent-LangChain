@@ -1,4 +1,5 @@
 import { filterLinksForPostContent } from "../../../utils.js";
+import { getActiveProfile } from "../../../../profiles/index.js";
 
 /**
  * Parse the LLM generation to extract the report from inside the <report> tag.
@@ -19,7 +20,8 @@ export function parseGeneration(generation: string): string {
 }
 
 export function formatPrompt(report: string, relevantLinks: string[]): string {
-  return `Here is the report I wrote on the content I'd like promoted by LangChain:
+  const brand = getActiveProfile().brand.name;
+  return `Here is the report I wrote on the content I'd like promoted${brand ? ` by ${brand}` : ""}:
 <report>
 ${report}
 </report>
@@ -27,7 +29,7 @@ ${report}
 Here are the relevant links used to create the report.
 You should remove tracking query parameters from the link, if present.
 If you are unsure whether a link's parameters are tracking, do not remove them. It's better to have a link with tracking parameters than a broken link.
-The links do NOT contribute to the post's length. They are temporarily removed from the post before the length is calculated, and re-added afterwards.
+Keep the whole post, including the link, within the platform limit; each link counts as 23 characters.
 <links>
 ${filterLinksForPostContent(relevantLinks)}
 </links>`;

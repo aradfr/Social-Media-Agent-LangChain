@@ -12,6 +12,9 @@ import { Octokit } from "@octokit/rest";
 import { shouldExcludeGitHubContent } from "../../should-exclude.js";
 import { skipContentRelevancyCheck } from "../../utils.js";
 import { verifyContentIsRelevant } from "./verify-content.js";
+import { getActiveProfile } from "../../../profiles/index.js";
+
+const BRAND = getActiveProfile().brand.name;
 
 function getOctokit() {
   const token = process.env.GITHUB_TOKEN;
@@ -51,9 +54,9 @@ const REPO_DEPENDENCY_PROMPT = `Here are the dependencies of the repository. You
 {dependencyFiles}
 </repository-dependency-files>`;
 
-const VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee at LangChain.
+export const VERIFY_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee${BRAND ? ` at ${BRAND}` : ""}.
 You're given a {file_type} from a GitHub repository and need to verify the repository implements your company's products.
-You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
+You're doing this to ensure the content is relevant to ${BRAND ?? "your business context"}, and it can be used as marketing material${BRAND ? ` to promote ${BRAND}` : ""}.
 
 ${getPrompts().businessContext}
 
@@ -154,7 +157,7 @@ async function verifyGitHubContentIsRelevant({
     );
   }
 
-  const systemPrompt = VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT.replaceAll(
+  const systemPrompt = VERIFY_RELEVANT_CONTENT_PROMPT.replaceAll(
     "{file_type}",
     fileType,
   ).replaceAll("{repoDependenciesPrompt}", dependenciesPrompt);
@@ -166,7 +169,7 @@ async function verifyGitHubContentIsRelevant({
 }
 
 /**
- * Verifies the content provided is relevant to LangChain products.
+ * Verifies the content provided is relevant to the active profile's business context.
  */
 export async function verifyGitHubContent(
   state: typeof VerifyContentAnnotation.State,

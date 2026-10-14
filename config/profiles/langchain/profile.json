@@ -1,0 +1,45 @@
+{
+  "$comment": "Upstream LangChain behaviour, kept as one selectable profile (AGENT_PROFILE=langchain, or legacy USE_LANGCHAIN_PROMPTS=true).",
+  "id": "langchain",
+  "name": "LangChain Community Spotlight",
+  "brand": {
+    "name": "LangChain",
+    "products": ["LangChain", "LangGraph", "LangSmith"]
+  },
+  "audience": "Developers building with LangChain, LangGraph and LangSmith",
+  "prompts": {
+    "businessContext": "business-context.md",
+    "contentValidation": "content-validation.md",
+    "postStructure": "post-structure.md",
+    "postRules": "post-rules.md",
+    "examples": "examples.md"
+  },
+  "signature": {
+    "headerPrefix": "LangChain Community Spotlight:",
+    "stripPhrases": ["Made by the LangChain Community"]
+  },
+  "exclusions": {
+    "domains": ["langchain.com", "langchain.dev", "langchain-ai.github.io"],
+    "githubOrgs": ["langchain-ai"],
+    "youtubeChannels": ["langchain"],
+    "tweetsRequireExternalUrls": true
+  },
+  "images": {
+    "promptTemplate": "image-prompt.json",
+    "styleVariations": [
+      "Light plum (#C78EAD) background. Dark navy (#030710) text and elements. Use #EBD0F0 for card backgrounds and highlights.",
+      "Lavender (#EBD0F0) background. Dark navy (#030710) text and elements. Use #C78EAD for accent elements and highlights.",
+      "Light blue (#7FC8FF) background. Dark navy (#030710) text and elements. Use #99D3FF for secondary fills and #F2FAFF for card backgrounds.",
+      "Light tint 1 (#99D3FF) background. Dark navy (#030710) text and elements. Use #7FC8FF for accent elements and #B2DEFF for secondary fills.",
+      "Light tint 2 (#B2DEFF) background. Dark navy (#030710) text and elements. Use #7FC8FF for accent elements and #CCE9FF for card backgrounds.",
+      "Light tint 3 (#CCE9FF) background. Dark navy (#030710) text and elements. Use #7FC8FF for accent elements and #E5F4FF for card backgrounds.",
+      "Light tint 4 (#E5F4FF) background. Dark navy (#030710) text and elements. Use #7FC8FF for accent elements and #F2FAFF for card backgrounds.",
+      "Light tint 5 (#F2FAFF) background. Dark navy (#030710) text and elements. Use #7FC8FF for accent elements and #B2DEFF for secondary fills."
+    ],
+    "frameTemplate": "langchain-community",
+    "allowedLogos": ["LangChain", "LangGraph", "LangSmith"]
+  },
+  "curation": {
+    "preset": "langchain"
+  }
+}

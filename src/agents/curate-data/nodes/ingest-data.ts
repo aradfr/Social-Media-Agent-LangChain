@@ -11,7 +11,7 @@ import { TweetV2 } from "twitter-api-v2";
 import { latentSpaceLoader } from "../loaders/latent-space.js";
 import { SimpleRedditPostWithComments } from "../../../clients/reddit/types.js";
 import { langchainDependencyReposLoader } from "../loaders/github/langchain.js";
-import { useLangChainPrompts } from "../../utils.js";
+import { getActiveProfile } from "../../../profiles/index.js";
 import { NUM_POSTS_PER_SUBREDDIT } from "../constants.js";
 
 export async function ingestData(
@@ -33,7 +33,8 @@ export async function ingestData(
   let aiNewsPosts: string[] = [];
   let redditPosts: SimpleRedditPostWithComments[] = [];
 
-  if (useLangChainPrompts()) {
+  // Curation sources/flow per profile (curation.preset in profile.json).
+  if (getActiveProfile().curation.preset === "langchain") {
     if (sources.includes("twitter")) {
       try {
         tweets = await twitterLoaderWithLangChain(config.store);

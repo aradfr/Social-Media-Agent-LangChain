@@ -1,5 +1,6 @@
 import { getModel } from "../../../models/index.js";
 import { getPrompts } from "../../generate-post/prompts/index.js";
+import { brandProducts } from "../../../profiles/index.js";
 import { RepurposerState } from "../types.js";
 import { z } from "zod";
 import { formatReportForPrompt } from "../utils.js";
@@ -13,7 +14,7 @@ The first part of the post is the header. This should be very short, no more tha
 
 <section key="2">
 This section will contain the main content of the post. The post body should contain a concise, high-level overview of the key point from the marketing report which was selected to be the focus of this post.
-It should focus on what the content does, or the problem it solves. Also include details on how the content implements LangChain's product(s) and why these products are important to the application.
+It should focus on what the content does, or the problem it solves. Also include details on how the content implements ${brandProducts()} and why these products are important to the application.
 Ensure this is short, no more than 3 sentences. Optionally, if the content is very technical, you may include bullet points covering the main technical aspects of the content.
 </section>
 

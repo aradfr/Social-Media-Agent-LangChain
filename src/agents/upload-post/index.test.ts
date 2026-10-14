@@ -3,6 +3,11 @@ import { ensureSignature } from "./index.js";
 
 describe("ensureSignature", () => {
   const PREFIX = "LangChain Community Spotlight:";
+  // Upstream behaviour now lives in the "langchain" profile; pass it explicitly.
+  const LC = {
+    headerPrefix: PREFIX,
+    stripPhrases: ["Made by the LangChain Community"],
+  };
 
   describe("removes old signature text", () => {
     it("should remove 'Made by the LangChain Community' with newlines before and after", () => {
@@ -12,7 +17,7 @@ Made by the LangChain Community
 
 This is the content.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toContain("Made by the LangChain Community");
       expect(result).toBe(`${PREFIX} Project Name 🚀
@@ -27,7 +32,7 @@ MADE BY THE LANGCHAIN COMMUNITY
 
 Content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toContain("MADE BY THE LANGCHAIN COMMUNITY");
       expect(result).toBe(`${PREFIX} Project 🚀
@@ -42,7 +47,7 @@ Made By The Langchain Community
 
 Content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toContain("Made By The Langchain Community");
     });
@@ -54,7 +59,7 @@ Content here.
 
 Made by the LangChain Community`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toContain("Made by the LangChain Community");
       expect(result).toBe(`${PREFIX} Project 🚀
@@ -67,7 +72,7 @@ Content here.`);
 
 Content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toContain("Made by the LangChain Community");
       expect(result).toContain(PREFIX);
@@ -83,7 +88,7 @@ Made by the LangChain Community
 
 Content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toMatch(/\n{3,}/);
     });
@@ -95,7 +100,7 @@ ${PREFIX} Project 🚀
 
 Content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toMatch(/^\n/);
     });
@@ -109,7 +114,7 @@ First paragraph.
 
 Second paragraph.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).toBe(`${PREFIX} Project 🚀
 
@@ -129,7 +134,7 @@ Made by the LangChain Community
 
 Content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toMatch(/\n{3,}/);
       expect(result).toBe(`${PREFIX} Project 🚀
@@ -144,7 +149,7 @@ Content here.`);
 
 Some content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).toContain(PREFIX);
       expect(result.startsWith(PREFIX)).toBe(true);
@@ -155,7 +160,7 @@ Some content here.`;
 
 Some content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       const prefixCount = (
         result.match(/LangChain Community Spotlight:/gi) || []
@@ -168,7 +173,7 @@ Some content here.`;
 
 Content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       const prefixCount = (
         result.match(/LangChain Community Spotlight:/gi) || []
@@ -185,7 +190,7 @@ Made by the LangChain Community
 
 Content here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toContain("Made by the LangChain Community");
       expect(result).toContain(PREFIX);
@@ -199,7 +204,7 @@ Content here.
 
 https://example.com`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).toBe(input);
     });
@@ -213,7 +218,7 @@ HMLR adds long-term memory to AI agents via LangGraph drop-in. Perfect RAGAS sco
 
 🔗 Try it: https://github.com/example/hmlr`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toContain("Made by the LangChain Community");
       expect(result).toContain("LangChain Community Spotlight:");
@@ -231,7 +236,7 @@ Made by the LangChain Community
 
 Content starts here.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
       const lines = result.split("\n");
 
       expect(lines[0]).toBe(`${PREFIX} Project 🚀`);
@@ -252,7 +257,7 @@ First paragraph.
 
 Second paragraph.`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).not.toMatch(/\n\n\n/);
     });
@@ -262,7 +267,7 @@ Second paragraph.`;
 
 Made by the LangChain Community`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).toBe(`${PREFIX} Project 🚀`);
       expect(result).not.toMatch(/\n$/);
@@ -271,7 +276,7 @@ Made by the LangChain Community`;
     it("should handle signature as the only content", () => {
       const input = `Made by the LangChain Community`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).toBe(`${PREFIX} `);
       expect(result).not.toContain("Made by the LangChain Community");
@@ -288,7 +293,7 @@ Second paragraph here.
 
 https://example.com`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).toBe(`${PREFIX} Project 🚀
 
@@ -311,7 +316,7 @@ Features:
 
 https://github.com/example`;
 
-      const result = ensureSignature(input);
+      const result = ensureSignature(input, LC);
 
       expect(result).toBe(`${PREFIX} AI Travel Agent ✈️
 
@@ -321,6 +326,26 @@ Features:
 - Dynamic LLMs
 
 https://github.com/example`);
+    });
+  });
+
+  describe("profile without a signature (default profile)", () => {
+    const NONE = { headerPrefix: undefined, stripPhrases: [] as string[] };
+
+    it("does not add any prefix", () => {
+      expect(ensureSignature("My post 🚀\n\nBody.", NONE)).toBe(
+        "My post 🚀\n\nBody.",
+      );
+    });
+
+    it("still normalises blank lines", () => {
+      expect(ensureSignature("\n\nMy post\n\n\n\nBody\n\n", NONE)).toBe(
+        "My post\n\nBody",
+      );
+    });
+
+    it("uses the active profile when no signature is passed (default = none)", () => {
+      expect(ensureSignature("Plain post")).toBe("Plain post");
     });
   });
 });
